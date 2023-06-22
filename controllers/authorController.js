@@ -3,7 +3,11 @@ const asynchandler  = require('express-async-handler');
 
 //author details
 exports.author_list = asynchandler(async function (req,res,next){
-    res.send("TODO");
+    const authors = await author.find().populate().exec();
+    res.render('author_list',{
+        title : 'Authors',
+        authors: authors,
+    })
 });
 
 // author page
