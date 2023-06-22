@@ -2,4 +2,14 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  p Welcome to #[em LocalLibrary], a basic site to store the details of books in the library 
+
+  h1 This stuffs pulled off a server, in Verginia! 
+
+  ul
+    li #[strong Books :] !{book_cnt}
+    li #[strong Copies :] !{book_inst_cnt}
+    li #[strong Available Copies :] !{avail_book_inst_count}
+    li #[strong Authors :] !{author_cnt}
+    li #[strong Genres :] !{genre_cnt}
+

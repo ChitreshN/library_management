@@ -14,8 +14,8 @@ const author_schema = new schema({
 author_schema.virtual("name").get(function(){
 
     let fullname = "";
-    if (this.fullname && this.last_name){
-        fullname = `${this.last_name},${this.first_name}`;
+    if (this.first_name && this.family_name){
+        fullname = `${this.family_name},${this.first_name}`;
     }
     return fullname;
 })
