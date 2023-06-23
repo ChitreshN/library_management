@@ -1,9 +1,10 @@
-const author        = require('../models/author');
+const Author        = require('../models/author');
 const asynchandler  = require('express-async-handler');
+const book          = require('../models/book')
 
 //author details
 exports.author_list = asynchandler(async function (req,res,next){
-    const authors = await author.find().populate().exec();
+    const authors = await Author.find().populate().exec();
     res.render('author_list',{
         title : 'Authors',
         authors: authors,
@@ -12,7 +13,23 @@ exports.author_list = asynchandler(async function (req,res,next){
 
 // author page
 exports.author_info = asynchandler(async function (req,res,next){
-    res.send("TODO");
+    const [author, books] = await Promise.all([
+        Author.findById(req.params.id).exec(),
+        book.find({author : req.params.id}).exec(),        
+    ])
+
+    if (author === null){
+        const err = new err('Author not found');
+        err.status(404);
+        return next(err);
+    }
+
+    res.render('author_detail',{
+        title : "Author detail",
+        author: author,
+        books : books,
+    })
+
 });
 
 // author create GET form

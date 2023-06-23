@@ -18,7 +18,7 @@ exports.genre_detail = asyncHandler(async (req, res, next) => {
     Book.find({genre: req.params.id}, 'title summary').exec(),
   ]);
 
-  if (genre == null){
+  if (genre === null){
     const err = new Error("Genre not foud");
     err.status = 404;
     return next(err);
