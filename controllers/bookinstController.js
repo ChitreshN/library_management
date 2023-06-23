@@ -20,7 +20,7 @@ exports.bookinstance_detail = asyncHandler(async (req, res, next) => {
 		return next(err);
 	}
 
-	res.render('book_instance_list',{
+	res.render('book_instance_detail',{
 		title : "Book:",
 		book_instance : book_instances,
 	});
