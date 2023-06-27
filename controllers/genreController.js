@@ -39,10 +39,34 @@ exports.genre_create_get = asyncHandler(async (req, res, next) => {
 });
 
 // Handle Genre create on POST.
-exports.genre_create_post = asyncHandler(async (req, res, next) => {
-     
-});
+exports.genre_create_post = [
+    body("name", "Must contain atleast 3 characters").trim().isLength({min : 3}).escape(),
+    
 
+    //Process form after sanitazing and checking the form
+    asyncHandler(async(req,res,next) =>{
+        const errors =  validationResult(req);
+        const genre = new Genre({name : req.body.name });
+
+        if (!errors.isEmpty()) {
+            res.render('genre_form',{
+                title : 'genre form',
+                genre : genre,
+                errors: errors.array(),
+            });
+        }
+        else {
+            const genre_exists = await Genre.findOne({name : req.body.name}).exec();
+            if (genre_exists){
+                res.redirect(genre_exists.url);
+            }
+            else {
+                await genre.save();
+                res.redirect(genre.url);
+            }
+        }
+    }),
+]; 
 // Display Genre delete form on GET.
 exports.genre_delete_get = asyncHandler(async (req, res, next) => {
   res.send("NOT IMPLEMENTED: Genre delete GET");

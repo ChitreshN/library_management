@@ -3,6 +3,7 @@ const Author        = require('../models/author');
 const Genre         = require('../models/genre');
 const BookInstance  = require('../models/bookinstance');
 const asyncHandler  = require("express-async-handler");
+const { validationResult } = require("express-validator");
 
 exports.index = asyncHandler(async (req, res, next) => {
   const [book_cnt, book_inst_cnt, avail_book_inst_count, author_cnt, genre_cnt,] = await Promise.all([
@@ -53,13 +54,61 @@ exports.book_detail = asyncHandler(async (req, res, next) => {
 
 // Display book create form on GET.
 exports.book_create_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Book create GET");
+    const [authors,genres] = await Promise.all([Author.find().exec(), Genre.find().exec()])
+    res.send('book_form',{title: 'Author Form',authors: authors, genres: genres})
 });
 
 // Handle book create on POST.
-exports.book_create_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Book create POST");
-});
+exports.book_create_post = [
+    (req,res,next) => {
+        if(!(req.body.genre instanceof Array)){
+            if( typeof req.body.genre === 'undefined') req.body.genre = [];
+            else req.body.genre = new Array(req.body.genre);
+        }
+        next();
+    },
+
+    body("title", "Title must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+    body("author", "Author must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+    body("summary", "Summary must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+    body("isbn", "ISBN must not be empty").trim().isLength({ min: 1 }).escape(),
+    body("genre.*").escape(),
+
+    asyncHandler(async (req,res,next)=>{
+
+        const errors = validationResult(req);
+
+        const book = new Book({
+            title   : req.body.title,
+            author  : req.body.author,
+            summary : req.body.summary,
+            isbn    : req.body.isbn,
+            genre   : req.body.genre,
+        });
+
+        const [allAuthors, allGenres] = await Promise.all([
+        Author.find().exec(),
+        Genre.find().exec(),
+      ]);
+
+      // Mark our selected genres as checked.
+      for (const genre of allGenres) {
+        if (book.genre.indexOf(genre._id) > -1) {
+          genre.checked = "true";
+        }
+      }
+    }),
+    
+]
 
 // Display book delete form on GET.
 exports.book_delete_get = asyncHandler(async (req, res, next) => {

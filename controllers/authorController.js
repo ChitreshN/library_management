@@ -1,7 +1,7 @@
 const Author        = require('../models/author');
 const asynchandler  = require('express-async-handler');
-const book          = require('../models/book')
-
+const book          = require('../models/book');
+const {body, validationResult} = require('express-validator')
 //author details
 exports.author_list = asynchandler(async function (req,res,next){
     const authors = await Author.find().populate().exec();
@@ -34,13 +34,56 @@ exports.author_info = asynchandler(async function (req,res,next){
 
 // author create GET form
 exports.author_create_GET = asynchandler(async function (req,res,next){
-    res.send("TODO");
+    res.render('author_create',{title: 'Create Author'});
 });
 
 // author create POST hanler
-exports.author_create_POST = asynchandler(async function (req,res,next){
-    res.send("TODO");
-});
+exports.author_create_POST = [
+  body("first_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("First name must be specified.")
+    .isAlphanumeric()
+    .withMessage("First name has non-alphanumeric characters."),
+  body("family_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Family name must be specified.")
+    .isAlphanumeric()
+    .withMessage("Family name has non-alphanumeric characters."),
+  body("date_of_birth", "Invalid date of birth")
+    .optional({ values: "falsy" })
+    .isISO8601()
+    .toDate(),
+  body("date_of_death", "Invalid date of death")
+    .optional({ values: "falsy" })
+    .isISO8601()
+    .toDate(),
+
+    asynchandler(async(req,res,next) => {
+        const errors = validationResult(req);
+        const author = new Author({ first_name : req.body.first_name,
+                                    family_name  : req.body.family_name,
+                                    date_of_birth: req.body.date_of_birth,
+                                    date_of_death: req.body.date_of_death,
+        });
+
+        if (!errors.isEmpty()){
+            res.render('author_create',{
+                title : 'Create author',
+                author : author,
+                errors : errors.array(),
+            });
+        }
+        else {
+            await author.save();
+            res.redirect(author.url);
+        }
+    }),
+];
+
 
 // author delete form
 exports.author_del_GET = asynchandler(async function (req,res,next){
